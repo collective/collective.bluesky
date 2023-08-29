@@ -8,3 +8,10 @@
 -->
 
 <!-- towncrier release notes start -->
+
+## 1.0.0a1 (2023-08-29)
+
+
+### New features:
+
+- Initial implementation of collective.bluesky [@ericof] [#0](https://github.com/collective/collective.bluesky/issues/0)
