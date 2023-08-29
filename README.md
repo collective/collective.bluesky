@@ -88,7 +88,7 @@ or, if you are using a `docker compose` configuration, add the new environment v
 
 ```yaml
     environment:
-      - BLUESKY_APPS='[{"host":"bsky.app","handle":"demo","app_password":"1232434323234"}]'
+      - BLUESKY_APPS=[{"host":"bsky.app","handle":"demo","app_password":"1232434323234"}]
 ```
 
 After start-up visit the `Content Rules` Control Panel, and create a new content rule.
