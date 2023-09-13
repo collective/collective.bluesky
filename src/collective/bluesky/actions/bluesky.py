@@ -1,4 +1,5 @@
 from collective.bluesky import _
+from collective.bluesky import logger
 from collective.bluesky import utils
 from collective.bluesky.app import BlueskyApp
 from OFS.SimpleItem import SimpleItem
@@ -19,8 +20,11 @@ from zope.interface import implementer
 from zope.interface import Interface
 
 
-DEFAULT_TEXT = """${title}, ${description}
-${tags}
+DEFAULT_TEXT = """${description}
+${url}
+"""
+
+FALLBACK_TEXT = """${title}
 ${url}
 """
 
@@ -50,6 +54,14 @@ class IBlueskyAction(Interface):
         title=_("Status"),
         description=_("Main text of the post."),
         default=DEFAULT_TEXT,
+        required=True,
+    )
+    fallback_text = schema.Text(
+        title=_("Status (Fallback)"),
+        description=_(
+            "Text to be used if the main text character count is larger than 300 characters."
+        ),
+        default=FALLBACK_TEXT,
         required=True,
     )
 
@@ -101,7 +113,15 @@ class BlueskyActionExecutor:
         content = self.content
         element = self.element
         interpolator = IStringInterpolator(content)
-        text = interpolator(safe_attr(element, "text")).strip()
+        main_text = interpolator(safe_attr(element, "text")).strip()
+        fallback_text = interpolator(safe_attr(element, "fallback_text")).strip()
+        text = utils.select_text(main_text, fallback_text)
+        if not text:
+            logger.info(
+                f"{content.absolute_url()} - Not posting because text and "
+                "fallback_text are larger than 300 characters."
+            )
+            return {}
         language = safe_attr(element, "language")
         if not language:
             language = content.language if content.language else "en"
@@ -124,7 +144,8 @@ class BlueskyActionExecutor:
     def __call__(self) -> bool:
         """Execute the action."""
         payload = self._prepare_payload()
-        self._post(payload)
+        if payload:
+            self._post(payload)
         return True
 
 

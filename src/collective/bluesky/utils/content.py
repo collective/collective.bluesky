@@ -1,6 +1,7 @@
 from Acquisition import aq_base
 from collective.bluesky.interfaces import BlueskyBlob
 from collective.bluesky.settings import IMAGE_WIDTH
+from collective.bluesky.settings import POST_CHAR_LIMIT
 from plone.dexterity.content import DexterityContent
 from plone.scale.storage import IImageScaleStorage
 from typing import Union
@@ -49,3 +50,16 @@ def media_from_content(content: DexterityContent) -> Union[BlueskyBlob, None]:
             return BlueskyBlob(
                 data=data, mime_type=field.contentType, caption=caption, size=len(data)
             )
+
+
+def select_text(text: str, fallback_text: str) -> str:
+    """Based on the character limit, select which text should be used."""
+    len_text = len(text)
+    len_fallback_text = len(fallback_text)
+    if len_text <= POST_CHAR_LIMIT:
+        return text
+    elif len_fallback_text <= POST_CHAR_LIMIT:
+        return fallback_text
+    else:
+        # No text is under the POST_CHAR_LIMIT
+        return ""
