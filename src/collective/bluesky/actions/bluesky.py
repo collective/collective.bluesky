@@ -29,9 +29,9 @@ ${url}
 """
 
 
-def safe_attr(element: "BlueskyAction", attr: str) -> Any:
+def safe_attr(element: "BlueskyAction", attr: str, default_value: str = "") -> Any:
     """Return attribute value."""
-    value = getattr(element, attr)
+    value = getattr(element, attr, default_value)
     return value if value is not None else ""
 
 
@@ -114,7 +114,9 @@ class BlueskyActionExecutor:
         element = self.element
         interpolator = IStringInterpolator(content)
         main_text = interpolator(safe_attr(element, "text")).strip()
-        fallback_text = interpolator(safe_attr(element, "fallback_text")).strip()
+        fallback_text = interpolator(
+            safe_attr(element, "fallback_text", FALLBACK_TEXT)
+        ).strip()
         text = utils.select_text(main_text, fallback_text)
         if not text:
             logger.info(
