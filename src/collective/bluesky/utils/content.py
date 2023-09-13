@@ -1,6 +1,8 @@
 from Acquisition import aq_base
 from collective.bluesky.interfaces import BlueskyBlob
+from collective.bluesky.settings import IMAGE_SIZE_LIMIT
 from collective.bluesky.settings import IMAGE_WIDTH
+from collective.bluesky.settings import IMAGE_WIDTH_FALLBACK
 from collective.bluesky.settings import POST_CHAR_LIMIT
 from plone.dexterity.content import DexterityContent
 from plone.scale.storage import IImageScaleStorage
@@ -23,6 +25,17 @@ IMAGE_ORDER = [
 ]
 
 
+def get_scale(content: DexterityContent, image_field: str) -> bytes:
+    """Get scale data."""
+    storage = getMultiAdapter((content, None), IImageScaleStorage)
+    for width in (IMAGE_WIDTH, IMAGE_WIDTH_FALLBACK):
+        scale = storage.scale(fieldname=image_field, width=width)
+        data = scale["data"].data if "data" in scale else b""
+        if data and len(data) < IMAGE_SIZE_LIMIT:
+            return data
+    return data
+
+
 def media_from_content(content: DexterityContent) -> Union[BlueskyBlob, None]:
     """Parse a content item and return a BlueskyBlob object."""
     content = aq_base(content)
@@ -42,13 +55,17 @@ def media_from_content(content: DexterityContent) -> Union[BlueskyBlob, None]:
             caption = caption if caption else (content.description or content.title)
             field_name = "image"
             field = getattr(content, field_name, None)
+        scale = get_scale(content, field_name)
         storage = getMultiAdapter((content, None), IImageScaleStorage)
-        scale = storage.scale(fieldname=field_name, width=IMAGE_WIDTH)
-        if scale and "data" in scale:
-            data = scale["data"].data
+        scale = storage.scale(fieldname=field_name)
+        # Only upload if scale is present
+        if scale:
             caption = caption if caption else title
             return BlueskyBlob(
-                data=data, mime_type=field.contentType, caption=caption, size=len(data)
+                data=scale,
+                mime_type=field.contentType,
+                caption=caption,
+                size=len(scale),
             )
 
 
