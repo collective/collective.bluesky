@@ -25,6 +25,15 @@ class BlueskyBlob:
     size: int
 
 
+@dataclass
+class ScaleInfo:
+    """Scale information."""
+
+    data: bytes
+    mime_type: str
+    size: int
+
+
 class IBlueskyRegistry(Interface):
     """A singleton utility listing a."""
 

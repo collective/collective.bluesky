@@ -1,8 +1,34 @@
 from collective.bluesky.interfaces import BlueskyBlob
+from collective.bluesky.interfaces import ScaleInfo
+from collective.bluesky.settings import IMAGE_SIZE_LIMIT
 from collective.bluesky.utils import content
 from plone import api
 
 import pytest
+
+
+class TestUtilsContentGetScale:
+    @property
+    def func(self):
+        return content.get_scale
+
+    @pytest.fixture(autouse=True)
+    def _init(self, portal):
+        self.portal = portal
+
+    @pytest.mark.parametrize(
+        "path",
+        [
+            "/mynews",
+            "/their-news",
+        ],
+    )
+    def test_get_scale(self, path: str):
+        content = api.content.get(path=path)
+        result = self.func(content, "image")
+        assert result is not None
+        assert isinstance(result, ScaleInfo)
+        assert result.size < IMAGE_SIZE_LIMIT
 
 
 class TestUtilsContentMediaFromContent:
