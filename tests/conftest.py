@@ -1,9 +1,11 @@
 from base64 import b64decode
+from base64 import b64encode
 from collections import defaultdict
 from collective.bluesky import DEFAULT_HOST
 from collective.bluesky import DEFAULT_PROTOCOL
 from collective.bluesky.testing import INTEGRATION_TESTING
 from DateTime import DateTime
+from pathlib import Path
 from plone import api
 from plone.app.multilingual.interfaces import ITranslationManager
 from plone.namedfile import NamedBlobImage
@@ -86,7 +88,15 @@ def mock_requests(requests_mock, bsky_base_url):
 
 
 @pytest.fixture
-def contents() -> List:
+def image_data() -> bytes:
+    """Read image file and return it b64 encoded."""
+    path = Path(__file__).parent
+    image_file = path / "data" / "image.png"
+    return b64encode(image_file.read_bytes())
+
+
+@pytest.fixture
+def contents(image_data) -> List:
     """Content to be created."""
     future_effective_date = DateTime() + 2  # Two days in the future
     past_effective_date = DateTime() - 2  # Two days in the past
@@ -138,6 +148,15 @@ def contents() -> List:
             "description": "A News Item about Bluesky",
             "subject": ["News", "Bluesky"],
             "_image": b"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjCDO+/R8ABKsCZD++CcMAAAAASUVORK5CYII=",  # noQA
+        },
+        {
+            "_container": "",
+            "type": "News Item",
+            "id": "their-news",
+            "title": "A News Item with a bigger image",
+            "description": "A News Item about Bluesky, but with a bigger image",
+            "subject": ["News", "Bluesky"],
+            "_image": image_data,
         },
     ]
 
