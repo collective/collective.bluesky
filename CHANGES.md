@@ -9,6 +9,14 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0a3 (2023-09-22)
+
+
+### Bug fixes:
+
+- Fix scale upload for images larger than 1Mb @ericof [#4](https://github.com/collective/collective.bluesky/issues/4)
+
+
 ## 1.0.0a2 (2023-09-13)
 
 
